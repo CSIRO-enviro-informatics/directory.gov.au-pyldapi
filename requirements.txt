@@ -1,0 +1,4 @@
+flask
+rdflib
+rdflib-jsonld
+pyldapi

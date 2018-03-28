@@ -1,0 +1,12 @@
+{% extends "page_layout.html" %}
+
+{% block content %}
+    <h1>Widget</h1>
+
+    <h2>{{ name }}</h2>
+    <p>{{ description }}</p>
+    <p>{{ creation_date }}</p>
+
+    <h2>Other views</h2>
+    <p>Other views of this Sample are listed in the <a href="{{ url_for('controller.widget', widget_id=widget_id) }}?_view=alternates">Alternates View</a>.</p>
+{% endblock %}

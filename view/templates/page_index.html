@@ -1,0 +1,22 @@
+{% extends "page_layout.html" %}
+
+{% block content %}
+    <h1>Python Linked Data Register (pyLDAPI) instance</h1>
+    <p>Replace this bare home page with your own information.</p>
+    <h3>Registers</h3>
+    <p>This home page also acts as a Master Register containing all the other registers delivered by this tool. All registers are listed below.</p>
+    <table class="pretty">
+        <tr>
+            <th>URI</th>
+            <th>Description</th>
+            <th>Contained Item Class</th>
+        </tr>
+    {% for register in register_tree %}
+        <tr>
+            <td style="width: 20%"> <h3><a href={{register.get('uri')}}> {{register.get('uri')}}</a></h3> </td>
+            <td>{{register.get('description')}}</td>
+            <td>{{register.get('contained_item_class')}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}
