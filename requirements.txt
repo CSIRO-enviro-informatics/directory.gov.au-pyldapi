@@ -2,3 +2,4 @@ flask
 rdflib
 rdflib-jsonld
 pyldapi
+requests
