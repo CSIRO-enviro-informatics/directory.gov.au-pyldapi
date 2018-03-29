@@ -1,3 +1,4 @@
+import os.path
 from flask import Response, render_template
 from rdflib import Graph, URIRef, RDF, RDFS, XSD, Namespace, Literal, BNode
 import _config as conf
@@ -7,9 +8,9 @@ from pyldapi.renderer import Renderer
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
 
-class WidgetRenderer(Renderer):
+class OrganizationRenderer(Renderer):
 
-    INSTANCE_CLASS = 'http://example.org/def/widgets#Widget'
+    INSTANCE_CLASS = 'http://www.w3.org/ns/org#Organization'
     INSTANCE_URI_BASE = 'http://localhost:5000/widget/'
 
     @staticmethod

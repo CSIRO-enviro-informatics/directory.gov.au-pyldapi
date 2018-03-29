@@ -1,8 +1,9 @@
 {% extends "page_layout.html" %}
 
 {% block content %}
-    <h1>Python Linked Data Register (pyLDAPI) instance</h1>
-    <p>Replace this bare home page with your own information.</p>
+    <h1>directory.gov.au - Linked Data API</h1>
+    <p>This repository is the Linked Data API version of <a href="http://directory.gov.au">directory.gov.au</a>. It allows persistent URIs for RDF versions of the directory.gov.au content to be served with RDF data.</p>
+    <p>The Register endpoints below contain items of particular classes.</p>
     <h3>Registers</h3>
     <p>This home page also acts as a Master Register containing all the other registers delivered by this tool. All registers are listed below.</p>
     <table class="pretty">
@@ -13,9 +14,9 @@
         </tr>
     {% for register in register_tree %}
         <tr>
-            <td style="width: 20%"> <h3><a href={{register.get('uri')}}> {{register.get('uri')}}</a></h3> </td>
-            <td>{{register.get('description')}}</td>
-            <td>{{register.get('contained_item_class')}}</td>
+            <td style="width: 20%"> <h3><a href={{ register.get('uri') }}> {{ register.get('uri') }}</a></h3> </td>
+            <td>{{ register.get('description') }}</td>
+            <td><a href="{{ register.get('contained_item_class') }}">{{ register.get('contained_item_class') }}</a></td>
         </tr>
     {% endfor %}
     </table>
