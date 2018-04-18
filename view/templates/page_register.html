@@ -8,8 +8,8 @@
             <td style="width:50%; vertical-align:top;">
                 <h3>Instances</h3>
                 <ul>
-                {% for instance in register %}
-                    <li><a href="{{ instance }}">{{ instance.split('/')[-1] }}</a></li>
+                {% for item in register %}
+                    <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
                 {% endfor %}
                 </ul>
                 {% if prev_page is not none %}

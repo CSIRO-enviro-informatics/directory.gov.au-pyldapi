@@ -64,12 +64,4 @@ def update(sparql_update_query, format_mimetype='application/sparql-results+json
 
 
 if __name__ == '__main__':
-    q = '''
-    PREFIX org: <http://www.w3.org/ns/org#>
-    SELECT * 
-    WHERE {
-        ?s a org:Organization .
-    }
-    LIMIT 10
-    '''
-    print(query(q))
+    pass
