@@ -1,5 +1,5 @@
 import logging
-import _config as conf
+import config as conf
 from flask import Flask
 from controller import routes
 

@@ -2,25 +2,19 @@
 
 {% block content %}
     <h1>Register</h1>
-    <h2>Of <em><a href="{{ class_name }}">{{ class_name }}</a></em> class items</h2>
+    <h2>Of <em><a href="{{ base_url }}">{{ class_name }}</a></em> class items</h2>
+
     <table>
         <tr>
             <td style="width:50%; vertical-align:top;">
                 <h3>Instances</h3>
+                {{ pagination.info }}
                 <ul>
-                {% for instance in register %}
-                    <li><a href="{{ instance }}">{{ instance.split('/')[-1] }}</a></li>
+                {% for instance in instances %}
+                    <li><a href="{{ base_url + instance.org.value }}">{{ instance.label.value }}</a></li>
                 {% endfor %}
                 </ul>
-                {% if prev_page is not none %}
-                <a href="{{ '{base_url}?per_page={per_page}&page={page}'.format(base_url=base_uri, per_page=per_page, page=prev_page) }}">Previous page</a>
-                {% endif %}
-                {% if prev_page is not none or next_page is not none %}
-                ...
-                {%  endif %}
-                {% if next_page is not none %}
-                <a href="{{ '{base_url}?per_page={per_page}&page={page}'.format(base_url=base_uri, per_page=per_page, page=next_page) }}">Next page</a>
-                {% endif %}
+                {{ pagination.links }}
             </td>
             <td style="width:50%; vertical-align:top;">
                 <h3>Automated Pagination</h3>
@@ -38,7 +32,7 @@ Link:   &lt;{{ base_uri }}?per_page=50&gt; rel="first",
                 </pre>
                 <p>If you want to page through the whole collection, you should start at <code>first</code> and follow the link headers until you reach <code>last</code> or until there is no <code>last</code> link given. You shouldn't try to calculate each <code>page</code> query string argument yourself.</p>
                 <h3>Alternate views</h3>
-                <p>Different views of this register of objects are listed at its <a href="{{ base_uri }}?_view=alternates">Alternate views</a> page.</p>
+                <p>Different views of this register of objects are listed at its <a href="{{ base_url }}?_view=alternates">Alternate views</a> page.</p>
             </td>
         </tr>
     </table>

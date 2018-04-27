@@ -1,7 +1,7 @@
 import os.path
 from flask import Response, render_template
 from rdflib import Graph, URIRef, RDF, RDFS, XSD, Namespace, Literal, BNode
-import _config as conf
+import config as conf
 from pyldapi import PYLDAPI
 import json
 from pyldapi.renderer import Renderer
@@ -49,34 +49,15 @@ class OrganizationRenderer(Renderer):
             'description': 'Renderer for Widget instances'
         }
 
-    def __init__(self, widget_id):
+    def __init__(self, instance_id, data):
         """Creates an instance of a Widget from an external dta source, in this case a dummy JSON file
         """
         Renderer.__init__(self)
 
-        self.widget_id = widget_id
-        self.name = None
-        self.description = None
+        self.instance_id = instance_id
         self.creation_date = None
-
-        self.load_data(self.widget_id)
-
-    def load_data(self, widget_id):
-        """A dummy data loader function
-        """
-        import json
-        if widget_id == str(1):
-            json_file = 'dummy_widget_1.json'
-        elif widget_id == str(2):
-            json_file = 'dummy_widget_2.json'
-        else:
-            raise ValueError('No widget with that ID was found')
-
-        json_file_content = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), json_file))
-        data = json.load(json_file_content)
-        self.name = data['name']
-        self.description = data['description']
-        self.creation_date = data['creation_date']
+        self.data = data
+        # self.load_data(self.widget_id)
 
     def render(self, view, format):
         """The required function used to determine how to create a rendering for each enabled view and format
@@ -92,10 +73,8 @@ class OrganizationRenderer(Renderer):
                 return Response(
                     render_template(
                         'page_widget.html',
-                        widget_id=self.widget_id,
-                        name=self.name,
-                        description=self.description,
-                        creation_date=self.creation_date
+                        instance_id= self.instance_id, 
+                        data= self.data
                     )
                 )
             else:
@@ -103,7 +82,7 @@ class OrganizationRenderer(Renderer):
         elif view == 'dct':
             return self.export_rdf()
 
-    def export_rdf(self, model_view='dct', rdf_mime='text/turtle'):
+    def export_rdf(self, rdf_mime='text/turtle'):
         """
         Exports this instance in RDF, according to a given model from the list of supported models,
         in a given rdflib RDF format
@@ -118,10 +97,10 @@ class OrganizationRenderer(Renderer):
         g.bind('geo', GEO)
 
         # URI for this site
-        this_site = URIRef(conf.URI_SITE_INSTANCE_BASE + self.site_no)
-        g.add((this_site, RDF.type, URIRef(self.site_type)))
+        this_site = URIRef(conf.URI_SITE_INSTANCE_BASE + self.widget_id)
+        g.add((this_site, RDF.type, URIRef(self.name)))
         g.add((this_site, RDF.type, URIRef('http://www.w3.org/2002/07/owl#NamedIndividual')))
-        g.add((this_site, RDFS.label, Literal('Site ' + self.site_no, datatype=XSD.string)))
+        g.add((this_site, RDFS.label, Literal('Site ' + self.widget_id, datatype=XSD.string)))
         g.add((this_site, RDFS.comment, Literal(self.description, datatype=XSD.string)))
         site_geometry = BNode()
         g.add((this_site, GEO.hasGeometry, site_geometry))

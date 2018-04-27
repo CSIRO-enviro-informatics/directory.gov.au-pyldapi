@@ -3,3 +3,4 @@ rdflib
 rdflib-jsonld
 pyldapi
 requests
+flask-paginate

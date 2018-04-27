@@ -11,7 +11,8 @@ class SingleSiteViewTest(unittest.TestCase):
         app.testing = True
         self.client = app.test_client() 
         # collect all registers 
-        response = self.client.get('/?_view=reg&_format=application/json')
+        response = self.client.get('/?_view=reg&_format=application/rdf+json')
+        print(response.data)
         json_data = json.loads(response.data)
 
         self.registers = set(ele.get('uri') for ele in json_data)

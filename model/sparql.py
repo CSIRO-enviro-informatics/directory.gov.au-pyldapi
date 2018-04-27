@@ -1,6 +1,6 @@
 import requests
 import json
-import _config as conf
+import config as conf
 
 
 def query(sparql_query, format_mimetype='application/sparql-results+json'):
@@ -13,6 +13,7 @@ def query(sparql_query, format_mimetype='application/sparql-results+json'):
     }
     try:
         r = requests.post(conf.SPARQL_QUERY_URI, auth=auth, data=data, headers=headers, timeout=1)
+        # print(r.text)
         return json.loads(r.content.decode('utf-8'))
     except Exception as e:
         raise e
@@ -62,14 +63,49 @@ def update(sparql_update_query, format_mimetype='application/sparql-results+json
     except Exception as e:
         raise e
 
-
+def organisation_query(start, limit):
+    orgs = '''
+        PREFIX org: <http://www.w3.org/ns/org#>
+        PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+       SELECT ?org ?label
+       WHERE {
+           ?org a org:Organization.
+           ?org rdfs:label ?label.
+       }
+       ''' + 'OFFSET ' + str(start) + 'LIMIT ' + str(limit)
+    return query(orgs)
+def organisatoin_detail(org):
+    org = '<'+org+'>'
+    detailAnOrg ='PREFIX org: <http://www.w3.org/ns/org#> \
+       PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#> \
+       SELECT  ?label ?create ?description ?link \
+       WHERE { \
+           %s a org:Organization. \
+            OPTIONAL {  %s rdfs:label ?label } \
+            OPTIONAL {  %s <http://purl.org/dc/terms/created> ?create }\
+            OPTIONAL {  %s <http://purl.org/dc/terms/description> ?description } \
+            OPTIONAL {  %s  <http://www.w3.org/2002/07/owl#seeAlso> ?link } \
+       } \
+    ' % (org, org,org,org,org)
+    # print(detailAnOrg)
+    return query(detailAnOrg)
 if __name__ == '__main__':
-    q = '''
-    PREFIX org: <http://www.w3.org/ns/org#>
-    SELECT * 
-    WHERE {
-        ?s a org:Organization .
-    }
-    LIMIT 10
-    '''
-    print(query(q))
+    organisations = organisation_query(0, 10)
+    # print(organisations)
+    # print(organisations.get('results').get('bindings')[0].get('org').get('value'))
+    print(organisatoin_detail(organisations.get('results').get('bindings')[3].get('org').get('value')))
+    #
+    # test_query = "PREFIX org: <http://www.w3.org/ns/org#> \
+    #    PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#> \
+    #    SELECT  ?label ?create ?description ?link \
+    #    WHERE { \
+    #        %s a org:Organization. \
+    #         OPTIONAL {  %s rdfs:label ?label } \
+    #         OPTIONAL {  %s <http://purl.org/dc/terms/created> ?create }\
+    #         OPTIONAL {  %s <http://purl.org/dc/terms/description> ?description } \
+    #         OPTIONAL {  %s  <http://www.w3.org/2002/07/owl#seeAlso> ?link } \
+    #    } \
+    # " % ('<http://test.linked.data.gov.au/dataset/auorg/directoryRole/D-02130>','<http://test.linked.data.gov.au/dataset/auorg/directoryRole/D-02130>','<http://test.linked.data.gov.au/dataset/auorg/directoryRole/D-02130>','<http://test.linked.data.gov.au/dataset/auorg/directoryRole/D-02130>','<http://test.linked.data.gov.au/dataset/auorg/directoryRole/D-02130>')
+    # print(test_query)
+    # print(query(test_query))
+
