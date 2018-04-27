@@ -62,6 +62,18 @@ def update(sparql_update_query, format_mimetype='application/sparql-results+json
         return r.text
     except Exception as e:
         raise e
+def total_organisation():
+    orgs = '''
+        PREFIX org: <http://www.w3.org/ns/org#>
+        PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+       SELECT ?org ?label
+       WHERE {
+           ?org a org:Organization.
+           ?org rdfs:label ?label.
+       }
+       '''
+    data = query(orgs)
+    return len(data.get('results').get('bindings'))
 
 def organisation_query(start, limit):
     orgs = '''
@@ -89,11 +101,12 @@ def organisatoin_detail(org):
     ' % (org, org,org,org,org)
     # print(detailAnOrg)
     return query(detailAnOrg)
+
 if __name__ == '__main__':
     organisations = organisation_query(0, 10)
     # print(organisations)
     # print(organisations.get('results').get('bindings')[0].get('org').get('value'))
-    print(organisatoin_detail(organisations.get('results').get('bindings')[3].get('org').get('value')))
+    # print(organisatoin_detail(organisations.get('results').get('bindings')[3].get('org').get('value')))
     #
     # test_query = "PREFIX org: <http://www.w3.org/ns/org#> \
     #    PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#> \

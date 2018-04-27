@@ -7,7 +7,6 @@ from .pyldapi import PYLDAPI
 from .renderer import Renderer
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
-
 class WidgetRenderer(Renderer):
 
     INSTANCE_CLASS = 'http://example.org/def/widgets#Widget'
@@ -48,32 +47,16 @@ class WidgetRenderer(Renderer):
             'description': 'Renderer for Widget instances'
         }
 
-    def __init__(self, widget_id, request):
+    def __init__(self, widget_id, widget):
         """Creates an instance of a Widget from an external dta source, in this case a dummy JSON file
         """
         Renderer.__init__(self)
 
         self.widget_id = widget_id
-        self.name = None
-        self.description = None
         self.creation_date = None
-        self.load_data(self.widget_id)
-        self.request = request
-
-    def load_data(self, widget_id):
-        """A dummy data loader function just reading from a JSON file
-        """
-        import json
-        if 1 <= int(widget_id) <= 25:
-            json_file_content = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                  'dummy_files', 'widgets.json'))
-            data = json.load(json_file_content)[widget_id]
-        else:
-            raise ValueError('No widget with that ID was found')
-
-        self.name = data['name']
-        self.description = data['description']
-        self.creation_date = data['creation_date']
+        # widget is a dict of widget {name: '', create: '', description: ''}
+        self.widget = widget
+        self.site_url = request.base_url
 
     def render(self, view, format):
         """The required function used to determine how to create a rendering for each enabled view and format
@@ -82,36 +65,22 @@ class WidgetRenderer(Renderer):
         :param format: the selected format to render
         :return:
         """
-
         # each view and format handled
         if view == 'widgont':  # a fake 'widgont' (Widget Ontology) view
             if format == 'text/html':
-                context = {
-                    'api_home': self.request.base_url.split('/')[-2],
-                    'widgets_register': self.request.base_url,
-                    'widget_uri': self.request.base_url,
-                    'widget_id': self.widget_id,
-                    'name': self.name,
-                    'description': self.description,
-                    'creation_date': self.creation_date
-                }
-                html = self.render_html(
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dummy_files', 'widget.html'),
-                    context
+                 return Response(
+                    render_template(
+                        'page_widget.html',
+                        widget_id= self.widget_id, 
+                        widget= self.widget
+                    )
                 )
-                return Response(html)
             else:
-                return Response(self.render_rdf(view, format), mimetype=format)
+                return Response(self.export_rdf(format), mimetype=format)
         elif view == 'dct':
-            return self.render_rdf()
+            return Response(self.export_rdf(format), mimetype=format)
 
-    def render_html(self, tpl_path, context):
-        path, filename = os.path.split(tpl_path)
-        return jinja2.Environment(
-            loader=jinja2.FileSystemLoader(path or './')
-        ).get_template(filename).render(context)
-
-    def render_rdf(self, view='widgont', format='text/turtle'):
+    def render_rdf(self, format='text/turtle'):
         """
         Exports this instance in RDF, according to a given model from the list of supported models,
         in a given rdflib RDF format
@@ -124,9 +93,9 @@ class WidgetRenderer(Renderer):
         # modules does all that for you
         if view == 'widgont':
             g = Graph()
-            this_widget = URIRef(self.request.base_url)
+            this_widget = URIRef(self.base_url)
             g.add((this_widget, RDF.type, URIRef(self.INSTANCE_CLASS)))
-            g.add((this_widget, RDFS.label, Literal(self.name, datatype=XSD.string)))
-            g.add((this_widget, RDFS.comment, Literal(self.description, datatype=XSD.string)))
+            g.add((this_widget, RDFS.label, Literal(self.widget.get('name'), datatype=XSD.string)))
+            g.add((this_widget, RDFS.comment, Literal(self.widget.get('description'), datatype=XSD.string)))
 
             return g.serialize(format=PYLDAPI.get_rdf_parser_for_mimetype(format))

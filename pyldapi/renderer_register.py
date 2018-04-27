@@ -11,11 +11,12 @@ from .renderer import Renderer
 class RegisterRenderer(Renderer):
     __metaclass__ = ABCMeta
 
-    def __init__(self, instances, pagination,  template,  description=None):
+    def __init__(self, register, pagination,  template, contained_item_class_uri, description=None):
         Renderer.__init__(self)
 
         self.base_url=request.base_url
         self.register_uri = self.base_url
+        self.contained_item_class_uri = contained_item_class_uri
         self.description = description
         self.pagination = pagination
         self.template = template
@@ -23,8 +24,7 @@ class RegisterRenderer(Renderer):
         self.per_page = pagination.per_page if pagination.per_page is not None else 10
         self.last_page = math.ceil(pagination.total/pagination.per_page) +1
         self.g = None
-        self.instances = instances
-
+        self.register = register
 
     @staticmethod
     def views_formats(description=None):
@@ -58,21 +58,11 @@ class RegisterRenderer(Renderer):
                 mimetype=format
             )
         elif format == 'text/html':
-            # html = self.render_html(
-            #     os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dummy_files', self.template),
-            #     context
-            # )
-            # return Response(html, headers=self.headers)
             return render_template(self.template,  
                 base_url=self.base_url,
-                instances=self.instances,
-                pagination=self.pagination)
-
-    def render_html(self, tpl_path, context):
-        path, filename = os.path.split(tpl_path)
-        return jinja2.Environment(
-            loader=jinja2.FileSystemLoader(path or './')
-        ).get_template(filename).render(context)
+                register=self.register,
+                pagination=self.pagination,
+                item_class=self.contained_item_class_uri)
 
     def render_rdf(self, format):
         g = Graph()
@@ -118,15 +108,15 @@ class RegisterRenderer(Renderer):
             g.add((page_uri, XHV.next, URIRef(page_uri_str_no_page_no + str(self.page + 1))))
 
         # add all the items
-        for item in self.instances:
+        for item in self.register:
             if isinstance(item, tuple):  # if it's a tuple, add in the label
                 item_uri = URIRef(item[0])
-                g.add((item_uri, RDF.type, URIRef(self.base_url)))
+                g.add((item_uri, RDF.type, URIRef(self.contained_item_class_uri)))
                 g.add((item_uri, RDFS.label, Literal(item[1], datatype=XSD.string)))
                 g.add((item_uri, REG.register, page_uri))
             else:  # just URIs
                 item_uri = URIRef(item)
-                g.add((item_uri, RDF.type, URIRef(self.base_url)))
+                g.add((item_uri, RDF.type, URIRef(self.contained_item_class_uri)))
                 g.add((item_uri, REG.register, page_uri))
 
         # serialize the RDF in whichever format was selected by the user, after converting from mimtype

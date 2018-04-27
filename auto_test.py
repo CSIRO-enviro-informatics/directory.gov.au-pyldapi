@@ -4,6 +4,7 @@ import unittest
 import json
 from rdflib.graph import Graph
 from app import app
+from model import sparql
 
 
 class SingleSiteViewTest(unittest.TestCase):
@@ -12,10 +13,9 @@ class SingleSiteViewTest(unittest.TestCase):
         self.client = app.test_client() 
         # collect all registers 
         response = self.client.get('/?_view=reg&_format=application/rdf+json')
-        print(response.data)
+        
         json_data = json.loads(response.data)
-
-        self.registers = set(ele.get('uri') for ele in json_data)
+        self.registers = set(ele.get('@id') for ele in json_data)
 
         self.formats = set(['text/html', 
                             'text/turtle', 
@@ -29,23 +29,27 @@ class SingleSiteViewTest(unittest.TestCase):
                             'abcdef'])
 
     def pickup_instance(self, register):
-        response = self.client.get(register+'?_view=reg&_format=text/turtle')
-        if response.status_code == 200:
-            g = Graph()
-            g.parse(data=response.data.decode('utf-8'), format='turtle')
-            # This query shoud be changed later to allow it query instances for different site
-            qres = g.query(
-                    """ SELECT ?instance
-                        WHERE {
-                            ?instance  a <http://pid.geoscience.gov.au/def/ont/vanilla/pdm#Site>
-                            } limit 1 
-                    """)
-            js_format = json.loads(qres.serialize(format="json").decode('utf-8'))
-            print('#pickup_instance() get an instance: '+js_format.get('results')
-                  .get('bindings')[0].get('instance').get('value'))
-        else:
-            raise Exception("call view=reg&_format=text/turtle error for register: " + register)
-        return js_format.get('results').get('bindings')[0].get('instance').get('value')
+        for i in range(2):
+            response = self.client.get(register+'?_view=reg&_format=text/turtle&per_page=1000')
+            if response.status_code == 200:
+                g = Graph()
+                g.parse(data=response.data.decode('utf-8'), format='turtle')
+                # This query shoud be changed later to allow it query instances for different site
+                qres = g.query("""SELECT  ?instance
+                            WHERE {
+                                ?instance a <http://www.w3.org/ns/org#Organization>
+                            }
+                        """)
+                js_format = json.loads(qres.serialize(format="json"))
+                # print('#pickup_instance() get an instance: ',js_format)
+                # raise Exception("call ", qres.serialize(format="json"))
+                if len(js_format.get('results').get('bindings')) >0:
+                    return js_format.get('results').get('bindings')[0].get('instance').get('value')
+                else:
+                    raise Exception("call view=reg&_format=text/turtle return None data for register: " + register)
+            # else:
+            #     raise Exception("call view=reg&_format=text/turtle error for register: " + register)
+        raise Exception("call /org/?_view=reg&_format=text/turtle return None data tried ten times " )
 
     def test_instance(self):
         """
@@ -53,9 +57,9 @@ class SingleSiteViewTest(unittest.TestCase):
             view default, description, alternates will not be included
         """
         for register in self.registers:
-            if register != '/':
+            if register != 'http://localhost/':
                 raw_instance = self.pickup_instance(register)
-
+                # raise Exception("call:", raw_instance)
                 instance = register+raw_instance.split('/')[-1]
                 print('#test_instance() test instance: '+instance)
 

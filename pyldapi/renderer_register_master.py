@@ -74,7 +74,6 @@ class RegisterMasterRenderer(Renderer):
 
         XHV = Namespace('https://www.w3.org/1999/xhtml/vocab#')
         self.g.bind('xhv', XHV)
-        print('self.register_uri', self.register_uri)
         register_uri = URIRef(self.register_uri)
         self.g.add((register_uri, RDF.type, REG.Register))
         self.g.add((register_uri, RDFS.label, Literal('Register', datatype=XSD.string)))
@@ -87,7 +86,6 @@ class RegisterMasterRenderer(Renderer):
                 label = register.get('contained_item_class').split('/')[-1]
 
             item_uri = URIRef(self.register_uri + register.get('uri')[1:])
-            print('item_uri', item_uri)
             self.g.add((item_uri, RDF.type, URIRef('http://purl.org/linked-data/registry#Register')))
             self.g.add((item_uri, RDFS.label, Literal('Register of ' + label + 's', datatype=XSD.string)))
             self.g.add((item_uri, RDFS.comment, Literal(register.get('description'), datatype=XSD.string)))

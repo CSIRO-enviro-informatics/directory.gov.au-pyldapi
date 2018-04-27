@@ -3,11 +3,12 @@
 {% block content %}
     <h1>Widget</h1>
 
-    <h2>{{ data.label.value }}</h2>
-    <p>{{ data.description.value }}</p>
-    <p>{{ data.create.value }}</p>
-    <p>{{instance_id}}</p>
+    <h2>Name: {{ widget.label }}</h2>
+    <p>Link: <a href={{widget.link}}>{{ widget.link }}</a></p>
+    <p>Description: {{ widget.description }}</p>
+    <p>Create Date: {{ widget.create }}</p>
+    <p>Instance ID:{{widget_id}}</p>
 
     <h2>Other views</h2>
-    <p>Other views of this Sample are listed in the <a href="{{ url_for('controller.organization', organization_id=instance_id) }}?_view=alternates">Alternates View</a>.</p>
+    <p>Other views of this Sample are listed in the <a href="{{ url_for('controller.organization', organization_id=widget.widget_id) }}?_view=alternates">Alternates View</a>.</p>
 {% endblock %}
